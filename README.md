@@ -13,45 +13,30 @@ The library uses only Kotlin stdlib and kotlinx.serialization - no platform-spec
 
 ## Installation
 
-### JitPack
+### Maven Central (Recommended)
 
-Add the JitPack repository to your build file:
+The library is available on Maven Central. No additional repositories needed!
 
 **Gradle (Kotlin DSL)**
 ```kotlin
-repositories {
-    maven { url = uri("https://jitpack.io") }
-}
-
 dependencies {
-    implementation("com.github.YOUR_GITHUB_USERNAME:simple-json-query:1.0.0")
+    implementation("io.github.ionate12:simple-json-query:1.0.1")
 }
 ```
 
 **Gradle (Groovy DSL)**
 ```groovy
-repositories {
-    maven { url 'https://jitpack.io' }
-}
-
 dependencies {
-    implementation 'com.github.YOUR_GITHUB_USERNAME:simple-json-query:1.0.0'
+    implementation 'io.github.ionate12:simple-json-query:1.0.1'
 }
 ```
 
 **Maven**
 ```xml
-<repositories>
-    <repository>
-        <id>jitpack.io</id>
-        <url>https://jitpack.io</url>
-    </repository>
-</repositories>
-
 <dependency>
-    <groupId>com.github.YOUR_GITHUB_USERNAME</groupId>
+    <groupId>io.github.ionate12</groupId>
     <artifactId>simple-json-query</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
 </dependency>
 ```
 
@@ -64,7 +49,7 @@ kotlin {
     sourceSets {
         val commonMain by getting {
             dependencies {
-                implementation("com.github.YOUR_GITHUB_USERNAME:simple-json-query:1.0.0")
+                implementation("io.github.ionate12:simple-json-query:1.0.1")
             }
         }
     }
@@ -72,9 +57,9 @@ kotlin {
 ```
 
 **Platform-specific artifacts:**
-- JVM: `simple-json-query-jvm`
-- JS: `simple-json-query-js`
-- Native: `simple-json-query-linuxX64`, `simple-json-query-macosX64`, `simple-json-query-iosArm64`, etc.
+- JVM: `io.github.ionate12:simple-json-query-jvm:1.0.1`
+- JS: `io.github.ionate12:simple-json-query-js:1.0.1`
+- Native: `io.github.ionate12:simple-json-query-linuxx64:1.0.1`, `io.github.ionate12:simple-json-query-macosx64:1.0.1`, etc.
 
 ## Quick Start
 
@@ -333,27 +318,23 @@ val recentOrders = orders.query(
 )
 ```
 
-## Publishing to JitPack
+## Publishing to Maven Central
 
-1. Update `build.gradle.kts` with your GitHub username:
-   ```kotlin
-   group = "com.github.YOUR_GITHUB_USERNAME"
-   ```
+This library is published to Maven Central for better Kotlin Multiplatform support.
 
-2. Commit and push your changes to GitHub
+See [PUBLISH.md](PUBLISH.md) for detailed publishing instructions.
 
-3. Create a release tag:
-   ```bash
-   git tag -a v1.0.0 -m "Release version 1.0.0"
-   git push origin v1.0.0
-   ```
+Quick overview:
+1. Register at https://central.sonatype.com/
+2. Verify namespace ownership for `io.github.ionate12`
+3. Set up GPG signing key
+4. Configure credentials in `~/.gradle/gradle.properties`
+5. Run `./gradlew publishAllPublicationsToSonatypeRepository`
 
-4. JitPack will automatically build your library when someone requests it
-
-5. Use the library in your projects:
-   ```kotlin
-   implementation("com.github.YOUR_GITHUB_USERNAME:simple-json-query:1.0.0")
-   ```
+The library will be available within 10-30 minutes at:
+```kotlin
+implementation("io.github.ionate12:simple-json-query:1.0.1")
+```
 
 ## Building Locally
 

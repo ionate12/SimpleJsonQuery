@@ -1,11 +1,12 @@
 plugins {
     kotlin("multiplatform") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
-    `maven-publish`
+    id("maven-publish")
+    id("signing")
 }
 
-group = "com.github.ionate12"  // JitPack format: com.github.USERNAME
-version = "1.0.0"
+group = "io.github.ionate12"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -21,23 +22,16 @@ kotlin {
     }
 
     js(IR) {
-        browser {
-            testTask {
-                useMocha()
-            }
-        }
-        nodejs {
-            testTask {
-                useMocha()
-            }
-        }
+        browser()
+        nodejs()
     }
 
-    // Native targets
+    // Tier 1 Native targets (most stable for Maven Central)
     linuxX64()
-    mingwX64()
     macosX64()
     macosArm64()
+
+    // iOS targets
     iosArm64()
     iosX64()
     iosSimulatorArm64()
@@ -55,113 +49,77 @@ kotlin {
             }
         }
 
-        val jvmMain by getting
         val jvmTest by getting {
             dependencies {
                 implementation("org.junit.jupiter:junit-jupiter:5.10.1")
             }
         }
-
-        val jsMain by getting
-        val jsTest by getting
-
-        val nativeMain by creating {
-            dependsOn(commonMain)
-        }
-
-        val nativeTest by creating {
-            dependsOn(commonTest)
-        }
-
-        val linuxX64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val linuxX64Test by getting {
-            dependsOn(nativeTest)
-        }
-
-        val mingwX64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val mingwX64Test by getting {
-            dependsOn(nativeTest)
-        }
-
-        val macosX64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val macosX64Test by getting {
-            dependsOn(nativeTest)
-        }
-
-        val macosArm64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val macosArm64Test by getting {
-            dependsOn(nativeTest)
-        }
-
-        val iosArm64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val iosArm64Test by getting {
-            dependsOn(nativeTest)
-        }
-
-        val iosX64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val iosX64Test by getting {
-            dependsOn(nativeTest)
-        }
-
-        val iosSimulatorArm64Main by getting {
-            dependsOn(nativeMain)
-        }
-        val iosSimulatorArm64Test by getting {
-            dependsOn(nativeTest)
-        }
     }
 }
 
-// Publishing configuration for JitPack
+// Explicitly configure each publication
 publishing {
-    publications {
-        withType<MavenPublication> {
-            groupId = "com.github.ionate12"
-            version = project.version.toString()
+    repositories {
+        maven {
+            name = "sonatype"
+            url = uri("https://central.sonatype.com/api/v1/publisher/upload?name=${project.group}&publishingType=AUTOMATIC")
 
-            pom {
-                name.set("Simple JSON Query")
-                description.set("A lightweight JSON query language for Kotlin Multiplatform - similar to JMESPath but simpler")
+            credentials {
+                username = findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
+                password = findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
+            }
+        }
+    }
+
+    publications.withType<MavenPublication> {
+        // Configure artifact naming
+        artifactId = when (name) {
+            "kotlinMultiplatform" -> "simple-json-query"
+            "metadata" -> "simple-json-query-metadata"
+            else -> "simple-json-query-$name"
+        }
+
+        pom {
+            name.set("Simple JSON Query")
+            description.set("A lightweight JSON query language for Kotlin Multiplatform - similar to JMESPath but simpler")
+            url.set("https://github.com/ionate12/SimpleJsonQuery")
+
+            licenses {
+                license {
+                    name.set("MIT License")
+                    url.set("https://opensource.org/licenses/MIT")
+                }
+            }
+
+            developers {
+                developer {
+                    id.set("ionate12")
+                    name.set("Minh Khoi Mai")
+                    email.set("mmkhoi.uel@gmail.com")
+                }
+            }
+
+            scm {
+                connection.set("scm:git:https://github.com/ionate12/SimpleJsonQuery.git")
+                developerConnection.set("scm:git:ssh://git@github.com/ionate12/SimpleJsonQuery.git")
                 url.set("https://github.com/ionate12/SimpleJsonQuery")
-
-                licenses {
-                    license {
-                        name.set("MIT License")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-
-                developers {
-                    developer {
-                        id.set("ionate12")
-                        name.set("Minh Khoi Mai")
-                        email.set("mmkhoi.uel@gmail.com")
-                    }
-                }
-
-                scm {
-                    connection.set("scm:git:https://github.com/ionate12/SimpleJsonQuery.git")
-                    developerConnection.set("scm:git:ssh://github.com/ionate12/SimpleJsonQuery.git")
-                    url.set("https://github.com/ionate12/SimpleJsonQuery")
-                }
             }
         }
     }
 }
 
-// Required for Gradle metadata
-tasks.withType<GenerateModuleMetadata> {
-    enabled = true
+// Signing configuration
+signing {
+    val signingKey = findProperty("signingKey") as String? ?: System.getenv("SIGNING_KEY")
+    val signingPassword = findProperty("signingPassword") as String? ?: System.getenv("SIGNING_PASSWORD")
+
+    if (signingKey != null && signingPassword != null) {
+        useInMemoryPgpKeys(signingKey, signingPassword)
+        sign(publishing.publications)
+    }
+}
+
+tasks.withType<AbstractPublishToMaven>().configureEach {
+    val signingTasks = tasks.withType<Sign>()
+    mustRunAfter(signingTasks)
 }
