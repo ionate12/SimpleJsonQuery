@@ -36,6 +36,7 @@ kotlin {
         }
     }
 
+
     js(IR) {
         browser()
         nodejs()
@@ -146,6 +147,25 @@ signing {
 tasks.withType<AbstractPublishToMaven>().configureEach {
     val signingTasks = tasks.withType<Sign>()
     mustRunAfter(signingTasks)
+}
+
+// Create Javadoc JAR for JVM target
+val javadocJar by tasks.registering(Jar::class) {
+    group = "documentation"
+    description = "Assembles Javadoc JAR for JVM target"
+    archiveClassifier.set("javadoc")
+
+    // Empty Javadoc JAR (Kotlin doesn't require actual Javadocs, just the file)
+    from(file("README.md"))
+}
+
+// Add Javadoc JAR to JVM publication
+publishing {
+    publications.withType<MavenPublication> {
+        if (name == "jvm") {
+            artifact(javadocJar.get())
+        }
+    }
 }
 
 // Task to create Central Portal bundle
