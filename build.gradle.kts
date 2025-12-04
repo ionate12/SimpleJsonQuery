@@ -4,7 +4,7 @@ plugins {
     `maven-publish`
 }
 
-group = "com.github.ionate12"
+group = "com.github.ionate12"  // JitPack format: com.github.USERNAME
 version = "1.0.0"
 
 repositories {
@@ -124,17 +124,17 @@ kotlin {
     }
 }
 
+// Publishing configuration for JitPack
 publishing {
     publications {
         withType<MavenPublication> {
-            groupId = project.group.toString()
-            artifactId = "simple-json-query-$name"
+            groupId = "com.github.ionate12"
             version = project.version.toString()
 
             pom {
                 name.set("Simple JSON Query")
                 description.set("A lightweight JSON query language for Kotlin Multiplatform - similar to JMESPath but simpler")
-                url.set("https://github.com/ionate12/simple-json-query")
+                url.set("https://github.com/ionate12/SimpleJsonQuery")
 
                 licenses {
                     license {
@@ -146,17 +146,22 @@ publishing {
                 developers {
                     developer {
                         id.set("ionate12")
-                        name.set("Minh Khoi Ma")
+                        name.set("Minh Khoi Mai")
                         email.set("mmkhoi.uel@gmail.com")
                     }
                 }
 
                 scm {
-                    connection.set("scm:git:git://github.com/ionate12/simple-json-query.git")
-                    developerConnection.set("scm:git:ssh://github.com/ionate12/simple-json-query.git")
-                    url.set("https://github.com/ionate12/simple-json-query")
+                    connection.set("scm:git:https://github.com/ionate12/SimpleJsonQuery.git")
+                    developerConnection.set("scm:git:ssh://github.com/ionate12/SimpleJsonQuery.git")
+                    url.set("https://github.com/ionate12/SimpleJsonQuery")
                 }
             }
         }
     }
+}
+
+// Required for Gradle metadata
+tasks.withType<GenerateModuleMetadata> {
+    enabled = true
 }
