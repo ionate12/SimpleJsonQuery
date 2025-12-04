@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     kotlin("multiplatform") version "1.9.22"
     kotlin("plugin.serialization") version "1.9.22"
@@ -10,6 +12,19 @@ version = "1.0.1"
 
 repositories {
     mavenCentral()
+}
+
+// Load local.properties
+val localPropertiesFile = rootProject.file("local.properties")
+val localProperties = Properties()
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.reader().use { localProperties.load(it) }
+}
+
+fun getPropertyValue(key: String): String? {
+    return localProperties.getProperty(key)
+        ?: findProperty(key) as String?
+        ?: System.getenv(key.uppercase().replace(".", "_"))
 }
 
 kotlin {
@@ -65,8 +80,8 @@ publishing {
             url = uri("https://central.sonatype.com/api/v1/publisher/upload?name=${project.group}&publishingType=AUTOMATIC")
 
             credentials {
-                username = findProperty("ossrhUsername") as String? ?: System.getenv("OSSRH_USERNAME")
-                password = findProperty("ossrhPassword") as String? ?: System.getenv("OSSRH_PASSWORD")
+                username = getPropertyValue("ossrhUsername")
+                password = getPropertyValue("ossrhPassword")
             }
         }
     }
@@ -110,8 +125,8 @@ publishing {
 
 // Signing configuration
 signing {
-    val signingKey = findProperty("signingKey") as String? ?: System.getenv("SIGNING_KEY")
-    val signingPassword = findProperty("signingPassword") as String? ?: System.getenv("SIGNING_PASSWORD")
+    val signingKey = getPropertyValue("signingKey")
+    val signingPassword = getPropertyValue("signingPassword")
 
     if (signingKey != null && signingPassword != null) {
         useInMemoryPgpKeys(signingKey, signingPassword)
