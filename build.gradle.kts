@@ -76,13 +76,8 @@ kotlin {
 publishing {
     repositories {
         maven {
-            name = "sonatype"
-            url = uri("https://central.sonatype.com/api/v1/publisher/upload?name=${project.group}&publishingType=AUTOMATIC")
-
-            credentials {
-                username = getPropertyValue("ossrhUsername")
-                password = getPropertyValue("ossrhPassword")
-            }
+            name = "local"
+            url = uri(layout.buildDirectory.dir("repo"))
         }
     }
 
@@ -151,4 +146,21 @@ signing {
 tasks.withType<AbstractPublishToMaven>().configureEach {
     val signingTasks = tasks.withType<Sign>()
     mustRunAfter(signingTasks)
+}
+
+// Task to create Central Portal bundle
+tasks.register<Zip>("createCentralPortalBundle") {
+    group = "publishing"
+    description = "Creates a bundle ZIP for Sonatype Central Portal upload"
+
+    dependsOn("publishAllPublicationsToLocalRepository")
+
+    from(layout.buildDirectory.dir("repo"))
+    archiveFileName.set("simple-json-query-${version}-bundle.zip")
+    destinationDirectory.set(layout.buildDirectory.dir("distributions"))
+
+    doLast {
+        println("Bundle created at: ${archiveFile.get().asFile.absolutePath}")
+        println("\nUpload this bundle to: https://central.sonatype.com/publishing/deployments")
+    }
 }
