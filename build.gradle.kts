@@ -125,12 +125,26 @@ publishing {
 
 // Signing configuration
 signing {
-    val signingKey = getPropertyValue("signingKey")
-    val signingPassword = getPropertyValue("signingPassword")
+    // Try file-based signing first (gpg.key.file + gpg.key.password)
+    val keyFile = getPropertyValue("gpg.key.file")
+    val keyPassword = getPropertyValue("gpg.key.password")
 
-    if (signingKey != null && signingPassword != null) {
-        useInMemoryPgpKeys(signingKey, signingPassword)
-        sign(publishing.publications)
+    if (keyFile != null && keyPassword != null) {
+        val keyFileObj = file(keyFile)
+        if (keyFileObj.exists()) {
+            val key = keyFileObj.readText()
+            useInMemoryPgpKeys(key, keyPassword)
+            sign(publishing.publications)
+        }
+    } else {
+        // Fallback to inline key (signingKey + signingPassword)
+        val signingKey = getPropertyValue("signingKey")
+        val signingPassword = getPropertyValue("signingPassword")
+
+        if (signingKey != null && signingPassword != null) {
+            useInMemoryPgpKeys(signingKey, signingPassword)
+            sign(publishing.publications)
+        }
     }
 }
 
